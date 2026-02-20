@@ -1,7 +1,7 @@
-package utility;
+package org.jiring.news.common.utility;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dto.NewsItemDto;
+import org.jiring.news.common.dto.NewsItemDto;
 
 import java.io.IOException;
 

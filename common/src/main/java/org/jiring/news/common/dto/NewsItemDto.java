@@ -1,4 +1,4 @@
-package dto;
+package org.jiring.news.common.dto;
 
 import lombok.Data;
 
