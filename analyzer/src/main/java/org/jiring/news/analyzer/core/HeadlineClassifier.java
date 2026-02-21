@@ -1,6 +1,9 @@
-package org.jiring.news.analyzer;
+package org.jiring.news.analyzer.core;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 public final class HeadlineClassifier {
 
@@ -26,6 +29,6 @@ public final class HeadlineClassifier {
             positiveWordsCount += POSITIVE_HEADLINE.contains(word) ? 1 : 0;
         }
 
-        return totalWordLength != 0  && (positiveWordsCount*2 >totalWordLength);
+        return totalWordLength != 0 && (positiveWordsCount * 2 > totalWordLength);
     }
 }
