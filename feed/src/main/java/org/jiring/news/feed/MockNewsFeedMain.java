@@ -1,43 +1,47 @@
 package org.jiring.news.feed;
 
-import org.jiring.news.feed.config.FeedConfig;
+import org.jiring.news.common.config.AddressConfig;
+import org.jiring.news.common.dto.NewsItemDto;
+import org.jiring.news.common.utility.JsonLinesMessageCodec;
 import org.jiring.news.feed.config.FeedConfigLoader;
+import org.jiring.news.feed.core.RandomNewsItemGenerator;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 public class MockNewsFeedMain {
 
-    private static final List<String> HEADLINE_WORDS = Arrays.asList(
-            "up", "down", "rise", "fall", "good", "bad", "success", "failure", "high", "low"
-    );
 
     private static final Random RANDOM = new Random();
 
 
     public static void main(String[] args) {
-        FeedConfig config = new FeedConfigLoader().load(System.getProperties());
+
+        AddressConfig config = new FeedConfigLoader().load
+                (System.getProperties());
         System.out.println(config);
 
 
         try (Socket socket = new Socket(config.host, config.port);
              BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))) {
             while (true) {
-//todo
+                NewsItemDto newsItem = RandomNewsItemGenerator.generate(RANDOM);
+                String jsonLine = JsonLinesMessageCodec.encode(newsItem);
+                writer.write(jsonLine);
+                writer.flush();
+                System.out.println("Sent: " + newsItem);
+
+                Thread.sleep(config.intervalMs);
             }
 
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
-
-
     }
 }

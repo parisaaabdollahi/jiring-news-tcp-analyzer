@@ -2,35 +2,24 @@ package org.jiring.news.feed.core;
 
 import org.jiring.news.common.dto.NewsItemDto;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
-public class RandomNewsItemGenerator implements NewsItemGenerator {
+public class RandomNewsItemGenerator {
 
-    private final Random random;
-    private final List<String> words;
+    private static final List<String> HEADLINE_WORDS = Arrays.asList(
+            "up", "down", "rise", "fall", "good", "bad", "success", "failure", "high", "low"
+    );
 
-    public RandomNewsItemGenerator(Random random, List<String> words) {
-        this.random = random;
-        this.words = words;
+    public static NewsItemDto generate(Random random) {
+        String headline = generateHeadline(random);
+        int priority = WeightedPriorityGenerator.generateWeightedPriority(random);
+        return new NewsItemDto(headline, priority);
     }
 
-    @Override
-    public NewsItemDto generate() {
-
+    private static String generateHeadline(Random random) {
         int wordCount = 3 + random.nextInt(3);
-        List<String> copyOfNewsItems = new ArrayList<>(words);
+        List<String> copyOfNewsItems = new ArrayList<>(HEADLINE_WORDS);
         Collections.shuffle(copyOfNewsItems, random);
-        String generatedHeadLine = String.join(" ", copyOfNewsItems.subList(0, wordCount));
-//todo
-        return null;
-    }
-
-
-    private static int generateWeightedPriority() {
-        //todo
-        return 0;
+        return String.join(" ", copyOfNewsItems.subList(0, wordCount));
     }
 }
