@@ -12,7 +12,6 @@ public final class AddressConfig {
         this.intervalMs = intervalMs;
     }
 
-
     @Override
     public String toString() {
         return "AddressConfig{" +

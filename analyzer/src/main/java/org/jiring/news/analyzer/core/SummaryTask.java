@@ -23,7 +23,7 @@ public final class SummaryTask implements Runnable {
         out.println("Last " + windowSeconds + "s: " + count + " positive news items.");
 
         if (count > 0) {
-            List<String> topHeadlines = store.getTopUniqueHeadlines(3);
+            List<String> topHeadlines = store.topNUniqueHeadlinesByPriority(items,3);
             if (!topHeadlines.isEmpty()) {
                 out.println("Top headlines:");
                 for (int i = 0; i < topHeadlines.size(); i++) {

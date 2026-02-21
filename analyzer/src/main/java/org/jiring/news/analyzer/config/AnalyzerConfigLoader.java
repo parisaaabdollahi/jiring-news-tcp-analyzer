@@ -20,6 +20,10 @@ public class AnalyzerConfigLoader implements ConfigLoader {
                 props.getProperty("news.analyzer.summary.interval.ms"),
                 DEFAULT_SUMMARY_INTERVAL_MS,
                 "news.analyzer.summary.interval.ms");
+
+        if (intervalMs<= 0){
+            intervalMs= DEFAULT_SUMMARY_INTERVAL_MS;
+        }
         return new AddressConfig(host, port, intervalMs);
     }
 }

@@ -45,7 +45,6 @@ public final class ClientHandler implements Runnable {
             try {
                 socket.close();
             } catch (IOException ignored) {
-                // Ignore close errors
             }
             log.println("Client disconnected: " + remoteAddress);
         }

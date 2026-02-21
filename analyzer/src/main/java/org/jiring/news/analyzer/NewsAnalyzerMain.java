@@ -18,8 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 public class NewsAnalyzerMain {
     private static final long DEFAULT_WINDOW_SECONDS = 10L;
-    private static final long DEFAULT_SUMMARY_INTERVAL_SECONDS = 10L;
-
 
     public static void main(String[] args) {
         new NewsAnalyzerMain().run(System.out, System.getProperties());
@@ -27,11 +25,10 @@ public class NewsAnalyzerMain {
 
     public void run(PrintStream log, java.util.Properties properties) {
         AddressConfig config = new AnalyzerConfigLoader().load(properties);
-        long summaryIntervalMs = config.intervalMs > 0 ? config.intervalMs : DEFAULT_SUMMARY_INTERVAL_SECONDS * 1000L;
         long windowSeconds = DEFAULT_WINDOW_SECONDS;
 
         log.println("NewsAnalyzer listening on port " + config.port);
-        log.println("Summary interval: " + (summaryIntervalMs / 1000) + "s, Window: " + windowSeconds + "s");
+        log.println("Summary interval: " + (config.intervalMs / 1000) + "s, Window: " + windowSeconds + "s");
 
         Clock clock = Clock.systemUTC();
         PositiveHeadLineStore store = new PositiveHeadLineStore(clock, windowSeconds);
@@ -39,8 +36,8 @@ public class NewsAnalyzerMain {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.scheduleAtFixedRate(
                 new SummaryTask(store, windowSeconds, log),
-                summaryIntervalMs,
-                summaryIntervalMs,
+                config.intervalMs ,
+                config.intervalMs ,
                 TimeUnit.MILLISECONDS);
 
         try (ServerSocket serverSocket = new ServerSocket(config.port)) {

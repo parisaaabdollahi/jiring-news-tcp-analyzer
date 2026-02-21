@@ -41,31 +41,25 @@ public class PositiveHeadLineStore {
         Instant cutoff = now.minusSeconds(windowSeconds);
 
 
-        List<TimedNewsItem> drained = new ArrayList<>();
-        TimedNewsItem item;
-        while ((item = queueItems.poll()) != null) {
-            drained.add(item);
+        List<TimedNewsItem> polledForWindow = new ArrayList<>();
+        TimedNewsItem item = queueItems.poll();
+        while (item != null) {
+            polledForWindow.add(item);
+            item = queueItems.poll();
         }
 
         List<NewsItemDto> inWindow = new ArrayList<>();
-        for (TimedNewsItem timed : drained) {
-            if (!timed.seenAt.isBefore(cutoff)) {
-                inWindow.add(timed.newsItem);
-                queueItems.offer(timed);
+        for (TimedNewsItem timedItem : polledForWindow) {
+            if (!timedItem.seenAt.isBefore(cutoff)) {
+                inWindow.add(timedItem.newsItem);
+                queueItems.offer(timedItem);
             }
         }
 
-        inWindow.sort(Comparator
-                .comparingInt(NewsItemDto::getPriority).reversed()
-                .thenComparing(NewsItemDto::getHeadline, Comparator.nullsLast(String::compareTo)));
         return inWindow;
     }
 
-    public List<String> getTopUniqueHeadlines(int maxCount) {
-        return topNUniqueHeadlinesByPriority(getItemsInWindow(), maxCount);
-    }
-
-    public static List<String> topNUniqueHeadlinesByPriority(List<NewsItemDto> items, int n) {
+    public List<String> topNUniqueHeadlinesByPriority(List<NewsItemDto> items, int n) {
         List<NewsItemDto> copy = new ArrayList<>(items);
         copy.sort(Comparator
                 .comparingInt(NewsItemDto::getPriority).reversed()
@@ -74,7 +68,7 @@ public class PositiveHeadLineStore {
         LinkedHashSet<String> unique = new LinkedHashSet<>();
         for (NewsItemDto item : copy) {
             if (item.getHeadline() == null) continue;
-            unique.add(item.getHeadline());
+            unique.add(item.getHeadline() + "-----"+item.getPriority());
             if (unique.size() >= n) break;
         }
         return new ArrayList<>(unique);
