@@ -1,12 +1,12 @@
-package org.jiring.news.feed.config;
+package org.jiring.news.common.config;
 
-public final class FeedConfig {
+public final class AddressConfig {
 
     public final String host;
     public final int port;
     public final long intervalMs;
 
-    public FeedConfig(String host, int port, long intervalMs) {
+    public AddressConfig(String host, int port, long intervalMs) {
         this.host = host;
         this.port = port;
         this.intervalMs = intervalMs;
@@ -15,7 +15,7 @@ public final class FeedConfig {
 
     @Override
     public String toString() {
-        return "FeedConfig{" +
+        return "AddressConfig{" +
                 "host='" + host + '\'' +
                 ", port=" + port +
                 ", intervalMs=" + intervalMs +
