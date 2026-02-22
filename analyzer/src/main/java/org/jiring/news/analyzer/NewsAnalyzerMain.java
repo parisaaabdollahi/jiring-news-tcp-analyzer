@@ -12,10 +12,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.Clock;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class NewsAnalyzerMain {
     private static final long DEFAULT_WINDOW_SECONDS = 10L;
@@ -34,7 +31,13 @@ public class NewsAnalyzerMain {
 
         Clock clock = Clock.systemUTC();
         PositiveHeadLineStore store = new PositiveHeadLineStore(clock, windowSeconds);
-        ExecutorService clientPool = Executors.newCachedThreadPool();
+        ExecutorService clientPool = new ThreadPoolExecutor(
+                10,
+                50,
+                60L, TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(100),
+                new ThreadPoolExecutor.AbortPolicy()
+        );
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.scheduleAtFixedRate(
                 new SummaryTask(store, windowSeconds),
@@ -46,11 +49,19 @@ public class NewsAnalyzerMain {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 ClientHandler handler = new ClientHandler(clientSocket, store);
-                clientPool.submit(handler);
+                try {
+                    clientPool.submit(handler);
+                } catch (RejectedExecutionException e) {
+                    log.warn("Thread pool full, rejecting client {}: {}", clientSocket.getRemoteSocketAddress(), e.getMessage());
+                    try {
+                        clientSocket.close();
+                    } catch (IOException io) {
+                        log.warn("Failed to close rejected client socket: {}", io.getMessage());
+                    }
+                }
             }
         } catch (IOException e) {
-            log.error("NewsAnalyzer encountered an IO error: {}", e.getMessage());
-            e.printStackTrace();
+            log.error("NewsAnalyzer encountered an IO error", e);
         } finally {
             scheduler.shutdownNow();
             clientPool.shutdownNow();
