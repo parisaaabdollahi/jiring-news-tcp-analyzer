@@ -10,10 +10,8 @@ public final class HeadlineClassifier {
     private static final Set<String> POSITIVE_HEADLINE =
             new HashSet<>(Arrays.asList("up", "rise", "good", "success", "high"));
 
-
     private HeadlineClassifier() {
     }
-
 
     public static boolean isPositive(String headline) {
         if (headline == null) return false;

@@ -5,9 +5,10 @@ import org.jiring.news.analyzer.core.ClientHandler;
 import org.jiring.news.analyzer.core.PositiveHeadLineStore;
 import org.jiring.news.analyzer.core.SummaryTask;
 import org.jiring.news.common.config.AddressConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.Clock;
@@ -18,36 +19,37 @@ import java.util.concurrent.TimeUnit;
 
 public class NewsAnalyzerMain {
     private static final long DEFAULT_WINDOW_SECONDS = 10L;
+    private static final Logger log = LoggerFactory.getLogger(NewsAnalyzerMain.class);
 
     public static void main(String[] args) {
-        new NewsAnalyzerMain().run(System.out, System.getProperties());
+        new NewsAnalyzerMain().run(System.getProperties());
     }
 
-    public void run(PrintStream log, java.util.Properties properties) {
+    public void run(java.util.Properties properties) {
         AddressConfig config = new AnalyzerConfigLoader().load(properties);
         long windowSeconds = DEFAULT_WINDOW_SECONDS;
 
-        log.println("NewsAnalyzer listening on port " + config.port);
-        log.println("Summary interval: " + (config.intervalMs / 1000) + "s, Window: " + windowSeconds + "s");
+        log.info("NewsAnalyzer listening on port {}", config.port);
+        log.info("Summary interval: {}s, Window: {}s", config.intervalMs / 1000, windowSeconds);
 
         Clock clock = Clock.systemUTC();
         PositiveHeadLineStore store = new PositiveHeadLineStore(clock, windowSeconds);
         ExecutorService clientPool = Executors.newCachedThreadPool();
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.scheduleAtFixedRate(
-                new SummaryTask(store, windowSeconds, log),
-                config.intervalMs ,
-                config.intervalMs ,
+                new SummaryTask(store, windowSeconds),
+                config.intervalMs,
+                config.intervalMs,
                 TimeUnit.MILLISECONDS);
 
         try (ServerSocket serverSocket = new ServerSocket(config.port)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                ClientHandler handler = new ClientHandler(clientSocket, store, log);
+                ClientHandler handler = new ClientHandler(clientSocket, store);
                 clientPool.submit(handler);
             }
         } catch (IOException e) {
-            log.println("NewsAnalyzer encountered an IO error: " + e.getMessage());
+            log.error("NewsAnalyzer encountered an IO error: {}", e.getMessage());
             e.printStackTrace();
         } finally {
             scheduler.shutdownNow();

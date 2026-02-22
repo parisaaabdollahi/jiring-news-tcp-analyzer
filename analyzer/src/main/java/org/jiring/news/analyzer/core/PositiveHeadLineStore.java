@@ -26,7 +26,6 @@ public class PositiveHeadLineStore {
     private final Clock clock;
     private final long windowSeconds;
 
-
     public PositiveHeadLineStore(Clock clock, long windowSeconds) {
         this.clock = clock;
         this.windowSeconds = windowSeconds;
@@ -68,7 +67,7 @@ public class PositiveHeadLineStore {
         LinkedHashSet<String> unique = new LinkedHashSet<>();
         for (NewsItemDto item : copy) {
             if (item.getHeadline() == null) continue;
-            unique.add(item.getHeadline() + "-----"+item.getPriority());
+            unique.add(item.getHeadline() + "-----" + item.getPriority());
             if (unique.size() >= n) break;
         }
         return new ArrayList<>(unique);
